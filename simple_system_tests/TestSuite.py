@@ -107,7 +107,7 @@ class TestSuite:
         while retries < tc.retry and tc_failed:
             retries = retries + 1
             if retries > 0:
-                print(str(retries) + ". Retry of testcase now.")
+                self.logger.info(str(retries) + ". Retry of testcase now.")
             tc_failed, duration = __execute()
 
         try:
@@ -130,8 +130,9 @@ class TestSuite:
     def teardown(self):
         pass
 
-    def add_test_case(self, test_case):
+    def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()
+        test_case.set_sub_params(sub_params)
         desc_cmd = desc.replace(" ", "_").replace("-","_").lower()
         self.__parser.add_argument('-' + self.__add_cmd_option(desc),'--' + desc_cmd, help='Test ' + desc, action="store_true")
         self.__testcases.append(test_case)
@@ -161,7 +162,13 @@ class TestSuite:
             if not all_inactive and not tc.is_active(args):
                 continue
 
-            self.__run_testcase(tc)
+            sub_params = tc.get_sub_params()
+            if sub_params != []:
+                for i in range(len(sub_params)):
+                    tc.set_sub(i)
+                    self.__run_testcase(tc)
+            else:
+                self.__run_testcase(tc)
 
         self.__suite(no_suite_setup, "Teardown")
         self._report.finish_results(self.__report_file)

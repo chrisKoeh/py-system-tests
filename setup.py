@@ -12,7 +12,7 @@ setuptools.setup(
     description="Simple System Tests Environment.",
     long_description=description,
     long_description_content_type="text/markdown",
-    url="https://github.com/chrisKoeh/py-system-tests",
+    url="https://github.com/chrisKoeh/simple-system-tests",
     license='MIT',
     python_requires='>=3.8',
     install_requires=[]

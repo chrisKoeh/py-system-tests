@@ -1,5 +1,5 @@
 import simple_system_tests as sst
-from GoogleTestCase import GoogleTestCase
+from HttpGetTestCase import HttpGetTestCase
 from TimeTestCase import TimeTestCase
 
 def custom_suite_prepare(self):
@@ -14,6 +14,11 @@ sst.TestSuite.prepare = custom_suite_prepare
 sst.TestSuite.teardown = custom_suite_teardown
 
 T=sst.TestSuite()
-T.add_test_case(GoogleTestCase("Http get to google via IPv6 and IPv4"))
+T.add_test_case(HttpGetTestCase("Http get"), [
+    {"host":"ipv6.google.com", "redundant_param":5},
+    {"host":"ipv4.google.com", "redundant_param":3},
+    {"host":"gmx.net", "redundant_param":2},
+    {"host":"github.com", "redundant_param":4}
+])
 T.add_test_case(TimeTestCase("Host unix time"))
 T.execute_tests()

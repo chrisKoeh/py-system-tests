@@ -28,3 +28,16 @@ if not "Testcase execution timeout" in open("index.html").read():
 
 if not "Failed retries" in report or not "2(2)" in report:
     print("Testcase retries error")
+
+r = shell_call("python3 SubTestCases.py && echo " + SUCCESS)
+report = open("index.html").read()
+if not SUCCESS in r[0]:
+    print("Subtestcase error, no " + SUCCESS + " found.")
+
+for i in range(10):
+    if not "sub testcase - " + str(i) in report or not "Test number is: " + str(i) in report:
+        print("Subtestcase error, could not find desired string for index " + str(i) + " in report.")
+
+for i in range(10):
+    if not "subdict testcase - index:" + str(i) in report or not "Testdict number is: " + str(i) in report:
+        print("Subdicttestcase error, could not find desired string for index " + str(i) + " in report.")
