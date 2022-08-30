@@ -3,6 +3,8 @@ class TestCase(object):
         self.__desc = desc
         self.params = {}
         self.logger = None
+        self.timeout = -1
+        self.retry = 0
     def prepare(self):
         pass
     def execute(self):
@@ -14,7 +16,7 @@ class TestCase(object):
     def set_params(self, params):
         self.params = params
     def is_active(self, args):
-       active = vars(args)[self.__desc.replace("-","_")]
+       active = vars(args)[self.__desc.replace("-","_").replace(" ", "_").lower()]
        return active
     def __del__(self):
        pass

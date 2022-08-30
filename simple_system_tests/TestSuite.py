@@ -2,12 +2,11 @@ import sys
 from io import StringIO
 import argparse
 import json
+import datetime
 
 from simple_system_tests.ReportHtml import ReportHtml
 from simple_system_tests.CachedLogger import CachedLogger
 
-PARAMS_ENV = "system_params.json"
-REPORT_OUTPUT="index.html"
 OVERLINE="---------------------------------------------------------------------\n"
 
 class TestSuite:
@@ -19,8 +18,8 @@ class TestSuite:
         self.__cmd_options = ["no", "h", "p", "o"]
         self.__parser = argparse.ArgumentParser()
         self.__parser.add_argument('-no','--no-suite-setup', help='No Suite Prepare and Teardown', action="store_true")
-        self.__parser.add_argument('-p','--json-system-params', help='Path to JSON params file.', default=PARAMS_ENV)
-        self.__parser.add_argument('-o','--report-output', help='Path to report html file.', default=REPORT_OUTPUT)
+        self.__parser.add_argument('-p','--json-system-params', help='Path to JSON params file.', default="system_params.json")
+        self.__parser.add_argument('-o','--report-output', help='Path to report html file.', default="index.html")
         self.params = {}
         self.__old_stdout = None
         self.__stdout = None
@@ -53,6 +52,7 @@ class TestSuite:
         print("\n\n----\nPASS\n----\n")
 
     def __suite(self, no_suite_setup, desc):
+        start = datetime.datetime.now().timestamp()
         if not no_suite_setup:
             try:
                 print(OVERLINE)
@@ -64,47 +64,65 @@ class TestSuite:
                     self.teardown()
             except Exception as ec:
                 self.logger.error("ABORT: Suite " + desc + " failed with " + str(ec))
-                self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), False)
+                self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), False, datetime.datetime.now().timestamp() - start, [0,0])
                 self._report.finish_results(self.__report_file)
                 sys.exit(1)
 
-            self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), True)
+            self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), True, datetime.datetime.now().timestamp() - start, [0,0])
 
     def __run_testcase(self, tc):
-            tc.set_params(self.params)
-
-            print(OVERLINE)
-            print("TEST " + tc.get_description() + ":\n\n")
+        def __execute():
             tc_failed = False
-            self.logger = self.__cached_logger.start_logging()
-            tc.logger = self.logger
-            try:
-                tc.prepare()
-            except Exception as ec:
-                self.logger.error("Preparation of testcase failed with: " + str(ec))
-                self._report.add_result(tc.get_description(), self.__cached_logger.stop_logging(), False)
-                self.__fail()
-                return
-
+            start = datetime.datetime.now().timestamp()
             try:
                 tc.execute()
             except Exception as ec:
                 self.logger.error("Testcase execution failed with: " + str(ec))
                 tc_failed = True
+            duration = datetime.datetime.now().timestamp() - start
 
-            try:
-                tc.teardown()
-            except Exception as ec:
-                self.logger.error("Testcase teardown failed with: " + str(ec))
-                tc_failed = True
+            if tc.timeout > 0:
+                if tc.timeout < duration:
+                    self.logger.error("Testcase execution timeout (" + str(tc.timeout) + " s) exceeded taking " + '{:.5f}'.format(duration) + " s instead.")
+                    tc_failed = True
 
-            log = self.__cached_logger.stop_logging()
-            if not tc_failed:
-                self.__pass()
-            else:
-                self.__fail()
-            
-            self._report.add_result(tc.get_description(), log, not tc_failed)
+            return [tc_failed, duration]
+
+        tc.set_params(self.params)
+
+        print(OVERLINE)
+        print("TEST " + tc.get_description() + ":\n\n")
+        tc_failed = True
+        self.logger = self.__cached_logger.start_logging()
+        tc.logger = self.logger
+        try:
+            tc.prepare()
+        except Exception as ec:
+            self.logger.error("Preparation of testcase failed with: " + str(ec))
+            self._report.add_result(tc.get_description(), self.__cached_logger.stop_logging(), False, [0, 0])
+            self.__fail()
+            return
+
+        retries = -1
+        while retries < tc.retry and tc_failed:
+            retries = retries + 1
+            if retries > 0:
+                print(str(retries) + ". Retry of testcase now.")
+            tc_failed, duration = __execute()
+
+        try:
+            tc.teardown()
+        except Exception as ec:
+            self.logger.error("Testcase teardown failed with: " + str(ec))
+            tc_failed = True
+
+        log = self.__cached_logger.stop_logging()
+        if not tc_failed:
+            self.__pass()
+        else:
+            self.__fail()
+
+        self._report.add_result(tc.get_description(), log, not tc_failed, duration, [retries, tc.retry])
 
     def prepare(self):
         pass
@@ -114,7 +132,8 @@ class TestSuite:
 
     def add_test_case(self, test_case):
         desc = test_case.get_description()
-        self.__parser.add_argument('-' + self.__add_cmd_option(desc),'--' + desc, help='Test ' + desc, action="store_true")
+        desc_cmd = desc.replace(" ", "_").replace("-","_").lower()
+        self.__parser.add_argument('-' + self.__add_cmd_option(desc),'--' + desc_cmd, help='Test ' + desc, action="store_true")
         self.__testcases.append(test_case)
 
     def execute_tests(self):

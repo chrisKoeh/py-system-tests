@@ -6,23 +6,11 @@ def style_css_and_js():
 
 tr:nth-child(even){background-color: #f2f2f2;}
 
-th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #04AA6D;
-  color: white;
-}
 td {
-    padding:20px;
+    padding:10px;
+    border: 1px solid grey;
 }
-.dropbtn {
-  background-color: #04AA6D;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-}
+
 .dropbtn {
   background-color: grey;
   color: white;
@@ -51,15 +39,6 @@ td {
   z-index: 1;
 }
 
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown a:hover {background-color: #ddd;}
-
 .show {display: block;}
 </style>
 </head>
@@ -83,8 +62,11 @@ def dropdown_link(log):
 class ReportHtml(object):
     def __init__(self):
         self.html = '<!doctype html><html><head><title>System Test Results</title>' + style_css_and_js() + '</head><body><table>'
+        self.html = self.html + "<tr><td><b>Testcase</b></td><td><b>Log</b></td><td><b>Result</b></td><td><b>Testcase Duration (s)</b></td>"
+        self.html = self.html + "<td><b>Retries(allowed)</b></td></tr>"
 
-    def add_result(self, description, log, result):
+    def add_result(self, description, log, result, duration, retries):
+        duration = '{:.5f}'.format(duration)
         color = "red"
         txt = "FAIL"
         if result:
@@ -95,9 +77,11 @@ class ReportHtml(object):
         if log.strip() != "":
             log_html = dropdown_link(log.replace("\n", "</br>"))
         self.html = self.html + '<tr>'
-        self.html = self.html + '<td><b>' + description + '</b></td>'
+        self.html = self.html + '<td>' + description + '</td>'
         self.html = self.html + '<td>' + log_html + '</td>'
-        self.html = self.html + '<td style="color:white;background-color:' + color + '">' + txt + '</td>'
+        self.html = self.html + '<td style="text-align:center;color:white;background-color:' + color + '">' + txt + '</td>'
+        self.html = self.html + '<td style="text-align:center">' + str(duration) + '</td>'
+        self.html = self.html + '<td style="text-align:center">' + str(retries[0]) + '(' + str(retries[1]) + ')</td>'
         self.html = self.html + "</tr>"
 
     def finish_results(self, output_file):
