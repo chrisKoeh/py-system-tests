@@ -1,11 +1,21 @@
 # simple-system-tests
-Simple Python library for writing test cases for System and components tests including automatic reports via html. The intention is to have an easy framework for developers without the need to learn a separate coding language.
-## Installation
-The module is not yet published on pypi, therefore you have to build it manually:
+Simple Python library for writing test cases for System and components tests including automatic reports via html. The intention is to have an easy framework for developers without the need to learn a separate coding language. Check out the repository via:
+```
+git clone https://github.com/chrisKoeh/simple-system-tests.git
+```
+## (Optional) Build package
 ```
 pip3 install setuptools wheel
 python3 setup.py sdist bdist_wheel
 (sudo) python3 setup.py install
+```
+## Installation
+```
+pip3 install simple-system-tests
+```
+For running the examples, `requests` pip library is also required:
+```
+pip3 install requests
 ```
 ## Quick-Start
 Go to `examples` and run:
@@ -93,7 +103,7 @@ class CustomTestCase(sst.TestSuite):
 ```
 For now retry and timeout is reduced to the `execute` task of testcases. It is not checked for Testsuites or `prepare` and `teardown` of Testcases.
 ### Sub testcases
-It might desirable to call one testcase just with different parameters. This can be done by using sub testcases, therefore when adding the testcase to the testsuite a list of parameters needs to be given. The count of list elements then defines also the count of sub testcases, eg. looking at an excerpt of `examples/main.py`:
+It might be desirable to call one testcase just with different parameters. This can be done by using sub testcases, therefore when adding the testcase to the testsuite a list of parameters needs to be given. The count of list elements then defines also the count of sub testcases, eg. looking at an excerpt of `examples/main.py`:
 ```
 T.add_test_case(HttpGetTestCase("Http get"), [
     {"host":"ipv6.google.com", "redundant_param":5},
