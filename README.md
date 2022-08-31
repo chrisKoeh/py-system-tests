@@ -3,7 +3,7 @@ Simple Python library for writing test cases for System and components tests inc
 ```
 git clone https://github.com/chrisKoeh/simple-system-tests.git
 ```
-## (Optional) Build package
+## (Optional) Build package locally
 ```
 pip3 install setuptools wheel
 python3 setup.py sdist bdist_wheel
@@ -22,7 +22,9 @@ Go to `examples` and run:
 ```
 python3 main.py
 ```
-which will execute two testcases (defined under `examples/HttpGetTestCase.py` and `examples/TimeTestCase.py`). After that open the created `examples/index.html` for an overview of the results in a web browser.
+which will execute the testcases defined under `examples/HttpGetTestCase.py` (triggered with 4 different parameter sets)
+and `examples/TimeTestCase.py`. An error message will be printed, that a `system_params.json` was not found
+which can be ignored for now. After that open the created `examples/index.html` for an overview of the results in a web browser.
 ## Testsuite
 The Testsuite is defined under `simple_system_tests/TestSuite.py`:
 - holds and executes testcases
@@ -33,11 +35,12 @@ class CustomTestSuite(sst.TestSuite):
     def prepare(self):
         subprocess.run("ip link set dev eth0 up", shell=True)
 ```
-- reporting of test results stored in `index.html` (can be customized)
+- reporting of test results stored in `index.html` (can be configured via command line)
 - providing command line options for configurations and all testcases allowing them to be called separately
 
 ## Command line options
-When using a Testsuite command line options for all testcases added to the suite will be automatically added. command line option shortcut will be derived from the beginning characters of the description string passed to the testcase. So make sure to have varying descriptions for your testcases. Having a look at the help of `examples/main.py` again will give the following output:
+When using a Testsuite command line options for all testcases added to the suite will be automatically added. command line option shortcut will be
+derived from the beginning characters of the description string passed to the testcase. So make sure to have varying descriptions for your testcases. Having a look at the help of `examples/main.py` again will give the following output:
 ```
 shell: python3 main.py -h
 usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-ht] [-ho]
@@ -112,7 +115,8 @@ T.add_test_case(HttpGetTestCase("Http get"), [
     {"host":"github.com", "redundant_param":4}
 ])
 ```
-So in the above case 4 (sub) tests will be run for `HttpGetTestCase`, which will also be shown as 4 testcase results in the report. The datatype of the list elements can be either of type `dict` like above or also primitive data types. It is recommended to have the same data type / data structure for all list elements of one testcase, though. The `test_params` can be accessed from the testcase `execute` using `self.test_params` like shown in `examples/HttpGetTestCase.py`:
+So in the above case 4 (sub) tests will be run for `HttpGetTestCase`, which results in 4 testcase entries in the report html. The datatype of the list elements can be either of type `dict` like above or also primitive data types.
+It is recommended to have the same data type / data structure for all list elements of one testcase, though. The `test_params` can be accessed from the testcase `execute` using `self.test_params` like shown in `examples/HttpGetTestCase.py`:
 ```
 class HttpGetTestCase(sst.TestCase):
     def execute(self):

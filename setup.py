@@ -1,11 +1,11 @@
 import setuptools
-  
+
 with open("README.md", "r") as fh:
     description = fh.read()
-  
+
 setuptools.setup(
     name="simple-system-tests",
-    version="0.1.1",
+    version="0.1.2",
     author="Christian Koehler",
     author_email="christian_koehler87@gmx.de",
     packages=["simple_system_tests"],
@@ -14,6 +14,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/chrisKoeh/simple-system-tests",
     license='MIT',
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     install_requires=[]
 )
