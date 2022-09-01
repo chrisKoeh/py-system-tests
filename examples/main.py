@@ -1,24 +1,42 @@
 import simple_system_tests as sst
-from HttpGetTestCase import HttpGetTestCase
-from TimeTestCase import TimeTestCase
+import time
 
+@sst.prepare_suite
 def custom_suite_prepare(self):
     self.logger.info("Preparing the testSuite")
 
+@sst.teardown_suite
 def custom_suite_teardown(self):
-    # self.logger.info and print have the same effect
     print("Tearing down the testSuite")
 
-# (Optional) Can be left out or also be achieved by deriving a new class
-sst.TestSuite.prepare = custom_suite_prepare
-sst.TestSuite.teardown = custom_suite_teardown
+@sst.testcase(desc="Simple print")
+def print_case(self):
+    self.logger.info("simple")
 
-T=sst.TestSuite()
-T.add_test_case(HttpGetTestCase("Http get"), [
-    {"host":"ipv6.google.com", "redundant_param":5},
-    {"host":"ipv4.google.com", "redundant_param":3},
-    {"host":"gmx.net", "redundant_param":2},
-    {"host":"github.com", "redundant_param":4}
-])
-T.add_test_case(TimeTestCase("Host unix time"))
-T.execute_tests()
+@sst.testcase("multi prints", ["1", "2", "3"])
+def print_sub_cases(self):
+    self.logger.info("multi " + self.test_params)
+
+@sst.testcase("JSON multi prints", [{"name":"Egon"}, {"name":"Kjelt"}])
+def print_json_sub_cases(self):
+    self.logger.info("JSON multi " + self.test_params["name"])
+
+@sst.testcase("retries", retry=2)
+def retry_case(self):
+    raise Exception("failed retry")
+
+@sst.testcase("timeouted", timeout=0.5)
+def timeout_case(self):
+    time.sleep(1)
+
+def custom_testcase_prepare(self):
+    self.logger.info("preparing this case")
+
+def custom_testcase_teardown(self):
+    self.logger.info("tearing down this case")
+
+@sst.testcase("prepared and torndown", retry=2, prepare_func=custom_testcase_prepare, teardown_func=custom_testcase_teardown)
+def prepare_case(self):
+    raise Exception("retrying")
+
+sst.run_tests()

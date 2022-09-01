@@ -8,12 +8,19 @@ class TestCase(object):
         self.__sub_desc = ""
         self.__sub_params = []
         self.test_params = None
+        self.execute_func = None
+        self.prepare_func = None
+        self.teardown_func = None
     def prepare(self):
-        pass
+        if self.prepare_func:
+            self.prepare_func(self)
     def execute(self):
-        raise Exception("Not implemented.")
+        if not self.execute_func:
+            raise Exception("Not implemented.")
+        self.execute_func(self)
     def teardown(self):
-        pass
+        if self.teardown_func:
+            self.teardown_func(self)
     def set_sub_params(self, params):
         if not isinstance(params, list):
             raise Exception("Subtest parameters needs to be of type list.")

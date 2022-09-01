@@ -6,8 +6,11 @@ import datetime
 
 from simple_system_tests.ReportHtml import ReportHtml
 from simple_system_tests.CachedLogger import CachedLogger
+from simple_system_tests.TestCase import TestCase
 
 OVERLINE="---------------------------------------------------------------------\n"
+
+global Suite
 
 class TestSuite:
     def __init__(self):
@@ -179,3 +182,26 @@ class TestSuite:
 
         if self.__fail_counter != 0:
             sys.exit(1)
+
+Suite = TestSuite()
+
+def prepare_suite(func):
+    TestSuite.prepare = func
+
+def teardown_suite(func):
+    TestSuite.teardown = func
+
+def testcase(desc, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
+    def testcase_(func):
+        global Suite
+        T=TestCase(desc)
+        T.retry=retry
+        T.timeout=timeout
+        T.execute_func = func
+        T.prepare_func = prepare_func
+        T.teardown_func = teardown_func
+        Suite.add_test_case(T, sub_params)
+    return testcase_
+
+def run_tests():
+    Suite.execute_tests()

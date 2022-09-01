@@ -1,2 +1,1 @@
-from simple_system_tests.TestSuite import TestSuite
-from simple_system_tests.TestCase import TestCase
+from simple_system_tests.TestSuite import prepare_suite, teardown_suite, testcase, run_tests
