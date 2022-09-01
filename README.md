@@ -14,13 +14,19 @@ python3 setup.py sdist bdist_wheel
 pip3 install simple-system-tests
 ```
 ## Quick-Start
-Go to `examples` and run:
+After installation create a script with the following content:
 ```
-python3 main.py
+import simple_system_tests as sst
+
+@sst.testcase("Myfirst testcase")
+def my_testcase(self):
+    self.logger.info("this is a PASS")
+
+sst.run_tests()
 ```
-which will execute several testcases with different parameters. An error message will be printed, that a `system_params.json` was not found
+Upon execution an error message will be printed, that the `system_params.json` was not found
 which can be ignored for now. After that open the created `examples/index.html` for an overview
-of the results in a web browser.
+of the results in a web browser. For a more detailed example take a look at `examples` folder. 
 ## Testsuite
 The Testsuite is defined under `simple_system_tests/TestSuite.py`:
 - holds and executes testcases
