@@ -9,7 +9,7 @@ def custom_suite_prepare(self):
 def custom_suite_teardown(self):
     print("Tearing down the testSuite")
 
-@sst.testcase(desc="Simple print")
+@sst.testcase(desc="simple print")
 def print_case(self):
     self.logger.info("simple")
 
