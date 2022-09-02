@@ -25,7 +25,7 @@ def my_testcase(self):
 sst.run_tests()
 ```
 Upon execution an error message will be printed, that the `system_params.json` was not found
-which can be ignored for now. After that open the created `examples/index.html` for an overview
+which can be ignored for now. After that open the created `index.html` for an overview
 of the results in a web browser. For a more detailed example take a look at `examples` folder. 
 ## Testsuite
 The Testsuite is defined under `simple_system_tests/TestSuite.py`:

@@ -17,7 +17,7 @@ def print_case(self):
 def print_sub_cases(self):
     self.logger.info("multi " + self.test_params)
 
-@sst.testcase("JSON multi prints", [{"name":"Egon"}, {"name":"Kjelt"}])
+@sst.testcase("JSON multi prints", [{"name":"Egon"}, {"name":"Kjeld"}, {"name":"Benny"}])
 def print_json_sub_cases(self):
     self.logger.info("JSON multi " + self.test_params["name"])
 
