@@ -1,7 +1,6 @@
 class TestCase(object):
     def __init__(self, desc):
         self.__desc = desc
-        self.params = {}
         self.logger = None
         self.timeout = -1
         self.retry = 0
@@ -44,8 +43,6 @@ class TestCase(object):
             suffix = str(p)
         self.__sub_desc = self.__desc + " - " + suffix
         self.test_params = p
-    def set_params(self, params):
-        self.params = params
     def is_active(self, args):
        active = vars(args)[self.__desc.replace("-","_").replace(" ", "_").lower()]
        return active

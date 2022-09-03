@@ -2,15 +2,36 @@ import sys
 from io import StringIO
 import argparse
 import json
+import os
 import datetime
 
 from simple_system_tests.ReportHtml import ReportHtml
 from simple_system_tests.CachedLogger import CachedLogger
 from simple_system_tests.TestCase import TestCase
 
+MAX_OVERLINE_COLS=60
 OVERLINE="---------------------------------------------------------------------\n"
 
 global Suite
+global env_params
+
+def get_overline():
+    cols = min(os.get_terminal_size().columns, MAX_OVERLINE_COLS)
+    ol = ""
+    for _ in range(cols):
+        ol = ol + "_"
+    return ol + "\n"
+
+def set_env_params(params):
+    global env_params
+    env_params = params
+
+def set_env(key, value):
+    global env_params
+    env_params[key] = value
+
+def get_env():
+    return env_params
 
 class TestSuite:
     def __init__(self):
@@ -23,9 +44,10 @@ class TestSuite:
         self.__parser.add_argument('-no','--no-suite-setup', help='No Suite Prepare and Teardown', action="store_true")
         self.__parser.add_argument('-p','--json-system-params', help='Path to JSON params file.', default="system_params.json")
         self.__parser.add_argument('-o','--report-output', help='Path to report html file.', default="index.html")
-        self.params = {}
         self.__old_stdout = None
         self.__stdout = None
+        self.prepare_func = None
+        self.teardown_func = None
 
     def __add_cmd_option(self, desc):
         for cmd_len in range(len(desc)):
@@ -58,13 +80,13 @@ class TestSuite:
         start = datetime.datetime.now().timestamp()
         if not no_suite_setup:
             try:
-                print(OVERLINE)
+                print(get_overline())
                 print(desc + " of Suite\n")
                 self.logger = self.__cached_logger.start_logging()
                 if desc == "Setup":
-                    self.prepare()
+                    self.prepare_func()
                 else:
-                    self.teardown()
+                    self.teardown_func()
             except Exception as ec:
                 self.logger.error("ABORT: Suite " + desc + " failed with " + str(ec))
                 self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), False, datetime.datetime.now().timestamp() - start, [0,0])
@@ -91,9 +113,7 @@ class TestSuite:
 
             return [tc_failed, duration]
 
-        tc.set_params(self.params)
-
-        print(OVERLINE)
+        print(get_overline())
         print("TEST " + tc.get_description() + ":\n\n")
         tc_failed = True
         self.logger = self.__cached_logger.start_logging()
@@ -127,12 +147,6 @@ class TestSuite:
 
         self._report.add_result(tc.get_description(), log, not tc_failed, duration, [retries, tc.retry])
 
-    def prepare(self):
-        pass
-
-    def teardown(self):
-        pass
-
     def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()
         test_case.set_sub_params(sub_params)
@@ -148,10 +162,11 @@ class TestSuite:
         self.__report_file = vars(args)["report_output"]
 
         try:
-            self.params = json.loads(open(params_env).read())
+            params = json.loads(open(params_env).read())
+            set_env_params(params)
+            print(env_params)
         except Exception as ec:
             print(str(ec) + ". So no parameters will be passed!")
-            self.params = {}
 
         all_inactive = True
         for tc in self.__testcases:
@@ -159,7 +174,8 @@ class TestSuite:
                 all_inactive = False
                 break
 
-        self.__suite(no_suite_setup, "Setup")
+        if self.prepare_func:
+            self.__suite(no_suite_setup, "Setup")
 
         for tc in self.__testcases:
             if not all_inactive and not tc.is_active(args):
@@ -173,23 +189,25 @@ class TestSuite:
             else:
                 self.__run_testcase(tc)
 
-        self.__suite(no_suite_setup, "Teardown")
+        if self.teardown_func:
+            self.__suite(no_suite_setup, "Teardown")
         self._report.finish_results(self.__report_file)
 
-        print(OVERLINE)
+        print(get_overline())
         print("Total pass: " + str(self.__pass_counter))
         print("Total fail: " + str(self.__fail_counter))
 
         if self.__fail_counter != 0:
             sys.exit(1)
 
+set_env_params({})
 Suite = TestSuite()
 
 def prepare_suite(func):
-    TestSuite.prepare = func
+    Suite.prepare_func = func
 
 def teardown_suite(func):
-    TestSuite.teardown = func
+    Suite.teardown_func = func
 
 def testcase(sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
     def testcase_(func):
