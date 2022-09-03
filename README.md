@@ -3,6 +3,11 @@ Simple Python library for writing test cases for System and components tests inc
 ```
 git clone https://github.com/chrisKoeh/simple-system-tests.git
 ```
+Main advantages using this framework:
+- separate command line option for each testcase allows faster debugging
+- parameterized subtests require only one test function but allows multiple tests of one part with different values
+- python only with just 3 decorator functions being necessary to learn
+
 ## (Optional) Build package locally
 ```
 pip3 install setuptools wheel
