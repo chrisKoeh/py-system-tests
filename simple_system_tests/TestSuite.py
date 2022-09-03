@@ -191,10 +191,12 @@ def prepare_suite(func):
 def teardown_suite(func):
     TestSuite.teardown = func
 
-def testcase(desc, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
+def testcase(sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
     def testcase_(func):
         global Suite
-        T=TestCase(desc)
+        desc = func.__name__
+        desc = desc[0].upper() + desc[1:]
+        T=TestCase(desc.replace("_", " "))
         T.retry=retry
         T.timeout=timeout
         T.execute_func = func
