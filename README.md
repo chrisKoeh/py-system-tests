@@ -52,7 +52,7 @@ So make sure to have varying descriptions for your testcases. Having a look at t
 `examples/main.py` again will give the following output:
 ```
 shell: python3 main.py -h
-usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-s] [-s]
+usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-s] [-m]
                [-j] [-r] [-t] [-pr]
 optional arguments:
   -h, --help            show this help message and exit
