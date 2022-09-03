@@ -12,14 +12,17 @@ class TestCase(object):
         self.teardown_func = None
     def prepare(self):
         if self.prepare_func:
-            self.prepare_func(self)
+            self.prepare_func()
     def execute(self):
         if not self.execute_func:
             raise Exception("Not implemented.")
-        self.execute_func(self)
+        if self.__sub_params == []:
+            self.execute_func()
+        else:
+            self.execute_func(self.test_params)
     def teardown(self):
         if self.teardown_func:
-            self.teardown_func(self)
+            self.teardown_func()
     def set_sub_params(self, params):
         if not isinstance(params, list):
             raise Exception("Subtest parameters needs to be of type list.")

@@ -16,7 +16,12 @@ global Suite
 global env_params
 
 def get_overline():
-    cols = min(os.get_terminal_size().columns, MAX_OVERLINE_COLS)
+    cols = MAX_OVERLINE_COLS
+    try:
+        cols = os.get_terminal_size().columns
+    except:
+        pass
+
     ol = ""
     for _ in range(cols):
         ol = ol + "_"
@@ -209,19 +214,30 @@ def prepare_suite(func):
 def teardown_suite(func):
     Suite.teardown_func = func
 
-def testcase(sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
+def logger():
+    return Suite.logger
+
+def add_tc(func, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
+    global Suite
+    desc = func.__name__
+    desc = desc[0].upper() + desc[1:]
+    T=TestCase(desc.replace("_"," "))
+    T.retry=retry
+    T.timeout=timeout
+    T.execute_func = func
+    T.prepare_func = prepare_func
+    T.teardown_func = teardown_func
+    Suite.add_test_case(T, sub_params)
+
+def testcase(retry=0, timeout=-1, prepare_func=None, teardown_func=None):
     def testcase_(func):
-        global Suite
-        desc = func.__name__
-        desc = desc[0].upper() + desc[1:]
-        T=TestCase(desc.replace("_", " "))
-        T.retry=retry
-        T.timeout=timeout
-        T.execute_func = func
-        T.prepare_func = prepare_func
-        T.teardown_func = teardown_func
-        Suite.add_test_case(T, sub_params)
+        add_tc(func, [], retry, timeout, prepare_func, teardown_func)
     return testcase_
+
+def testcases(sub_params, retry=0, timeout=-1, prepare_func=None, teardown_func=None):
+    def testcases_(func):
+        add_tc(func, sub_params, retry, timeout, prepare_func, teardown_func)
+    return testcases_
 
 def run_tests():
     Suite.execute_tests()

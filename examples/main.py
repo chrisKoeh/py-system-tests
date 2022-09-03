@@ -2,40 +2,45 @@ import simple_system_tests as sst
 import time
 
 @sst.prepare_suite
-def custom_suite_prepare(self):
-    self.logger.info("Preparing the testSuite")
+def custom_suite_prepare():
+    sst.logger().info("Preparing the testSuite")
+    sst.set_env("env1", 5)
 
 @sst.teardown_suite
-def custom_suite_teardown(self):
+def custom_suite_teardown():
     print("Tearing down the testSuite")
 
-@sst.testcase(desc="simple print")
-def print_case(self):
-    self.logger.info("simple")
+@sst.testcase()
+def env_case():
+    sst.logger().warning(sst.get_env())
 
-@sst.testcase("multi prints", ["1", "2", "3"])
-def print_sub_cases(self):
-    self.logger.info("multi " + self.test_params)
+@sst.testcase()
+def simple_print():
+    sst.logger().info("simple")
 
-@sst.testcase("JSON multi prints", [{"name":"Egon"}, {"name":"Kjeld"}, {"name":"Benny"}])
-def print_json_sub_cases(self):
-    self.logger.info("JSON multi " + self.test_params["name"])
+@sst.testcases(["1", "2", "3"])
+def multi_prints(s):
+    sst.logger().info(s)
 
-@sst.testcase("retries", retry=2)
-def retry_case(self):
+@sst.testcases([{"name":"Egon"}, {"name":"Kjeld"}, {"name":"Benny"}])
+def json_multi_prints(j):
+    sst.logger().info("JSON multi " + j["name"])
+
+@sst.testcase(retry=2)
+def retry_case():
     raise Exception("failed retry")
 
-@sst.testcase("timeouted", timeout=0.5)
-def timeout_case(self):
+@sst.testcase(timeout=0.5)
+def timeout_case():
     time.sleep(1)
 
-def custom_testcase_prepare(self):
-    self.logger.info("preparing this case")
+def custom_testcase_prepare():
+    sst.logger().info("preparing this case")
 
-def custom_testcase_teardown(self):
-    self.logger.info("tearing down this case")
+def custom_testcase_teardown():
+    sst.logger().info("tearing down this case")
 
-@sst.testcase("prepared and torndown", retry=2, prepare_func=custom_testcase_prepare, teardown_func=custom_testcase_teardown)
+@sst.testcase(retry=2, prepare_func=custom_testcase_prepare, teardown_func=custom_testcase_teardown)
 def prepare_case(self):
     raise Exception("retrying")
 

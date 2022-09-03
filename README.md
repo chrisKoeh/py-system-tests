@@ -23,9 +23,9 @@ After installation create a script with the following content:
 ```
 import simple_system_tests as sst
 
-@sst.testcase("Myfirst testcase")
-def my_testcase(self):
-    self.logger.info("this is a PASS")
+@sst.testcase()
+def my_testcase():
+    sst.logger().info("this is a PASS")
 
 sst.run_tests()
 ```
@@ -39,11 +39,11 @@ The Testsuite is defined under `simple_system_tests/TestSuite.py`:
 ```
 import simple_system_tests as sst
 @sst.prepare_suite
-def s_prepare(self):
-    self.logger.info("preparing the suite")
+def s_prepare():
+    sst.logger().info("preparing the suite")
 @sst.teardown_suite
-def s_teardown(self):
-    self.logger.info("tearing the suite down")
+def s_teardown():
+    sst.logger().info("tearing the suite down")
 ```
 - reporting of test results stored in `index.html` (can be configured via command line)
 - providing command line options for configurations and all testcases allowing them to be called
@@ -54,11 +54,11 @@ When using a Testsuite command line options for all testcases added to the suite
 automatically created. Command line option shortcut will be
 derived from the beginning characters of the description string passed to the testcase.
 So make sure to have varying descriptions for your testcases. Having a look at the help of
-`examples/main.py` again will give the following output:
+`examples/main.py` will give the following output:
 ```
 shell: python3 main.py -h
-usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-s] [-m]
-               [-j] [-r] [-t] [-pr]
+usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-s] [-e]
+               [-m] [-j] [-r] [-t] [-pr]
 optional arguments:
   -h, --help            show this help message and exit
   -no, --no-suite-setup
@@ -67,12 +67,13 @@ optional arguments:
                         Path to JSON params file.
   -o REPORT_OUTPUT, --report-output REPORT_OUTPUT
                         Path to report html file.
-  -s,  --simple_print   Test simple print
-  -m,  --multi_prints   Test multi prints
+  -e   --env_case       Test Env case
+  -s,  --simple_print   Test Simple print
+  -m,  --multi_prints   Test Multi prints
   -j,  --json_multi_prints
-                        Test JSON multi prints
-  -r,  --retries        Test retries
-  -t,  --timeouted      Test timeouted
+                        Test Json multi prints
+  -r,  --retries        Test Retry case
+  -t,  --timeouted      Test Timeout case
   -pr, --prepared_and_torndown
                         Test prepared and torndown
 ```
@@ -86,34 +87,42 @@ Testcases are created using decorators:
 ```
 import simple_system_tests as sst
 
-@sst.testcase("Custom testcase")
-def custom_testcase(self):
+@sst.testcase()
+def custom_testcase():
     raise Exception("Fails always, anyways")
 ```
 A testcase is considered `PASS` as long as no exception is raised.
 ### Testcase arguments
 ```
-@sst.testcase(desc, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None)
+@sst.testcase(retry=0, timeout=-1, prepare_func=None, teardown_func=None)
 ```
-- desc: description of testcase, which will be used to create according command line option
-- sub_params: allows testcase to be called multiple times with count of sub_params length.
 - retry: how often a testcase is retried before considered as `FAIL`
 - timeout: in seconds how long the testcase may last, considered as `FAIL` if extended
 - prepare_func / teardown_func: functions to be called before / after testcase execution
 
+### Sub testcases
+```
+@sst.testcases(sub_params, retry=0...)
+def multi_tests(sub_param):
+    ...
+```
+It is possible to run multiple tests at once. The number of tests is defined by the list length
+of the `sub_params` argument. The rest of the arguments are the same as for `@sst.testcase`
+decorator.
 ### System parameters
 Environment parameters for the testsuite can be used from a json file named `system_params.json`
 (the file path can be customized by passing the `-p` option). Those will be made available in the
-Testcase by the attribute `self.params`:
+Testcase by the function `sst.get_env()`:
 ```
 import simple_system_tests as sst
 
-@sst.testcase("case with env params")
-def env_testcase(self):
-    self.logger.info(self.params)
+@sst.testcase()
+def env_case():
+    sst.logger().info(sst.get_env())
 ```
 It is also possible to access and modify these json params from within the testsuite, eg. in case
-a global python object should be made available in Testsuite preparation for all testcases.
+a global python object should be made available in Testsuite preparation for all testcases, which
+is possible with `sst.set_env(key, value)` function.
 ### Logging
 The file path of the output file can be customized by passing the `-o` option, which defaults to
 `index.html`. A `logger` object attribute is available within testcases and testsuites.
