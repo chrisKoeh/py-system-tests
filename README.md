@@ -52,8 +52,8 @@ separately
 ## Command line options
 When using a Testsuite command line options for all testcases added to the suite will be
 automatically created. Command line option shortcut will be
-derived from the beginning characters of the description string passed to the testcase.
-So make sure to have varying descriptions for your testcases. Having a look at the help of
+derived from the beginning characters of the decorated function name.
+Make sure to have varying descriptions for your testcases. Having a look at the help of
 `examples/main.py` will give the following output:
 ```
 shell: python3 main.py -h
@@ -77,7 +77,7 @@ optional arguments:
   -pr, --prepared_and_torndown
                         Test prepared and torndown
 ```
-So testcases can be called separately without having to execute all testcases in one run.
+Testcases can be called separately without having to execute all testcases in one run.
 It is also possible to pass multiple testcases in one execution. In case the Suite setup and
 teardown is not wanted this can be achieved by putting the `-no, --no-suite-setup` option.
 ## Testcases
@@ -120,8 +120,8 @@ import simple_system_tests as sst
 def env_case():
     sst.logger().info(sst.get_env())
 ```
-It is also possible to access and modify these json params from within the testsuite, eg. in case
-a global python object should be made available in Testsuite preparation for all testcases, which
+Setting these json params from within the testsuite, eg. in case
+a global python object should be made available in Testsuite preparation for all testcases,
 is possible with `sst.set_env(key, value)` function.
 ### Logging
 The file path of the output file can be customized by passing the `-o` option, which defaults to
