@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import datetime
+import traceback
 
 from simple_system_tests.ReportHtml import ReportHtml
 from simple_system_tests.CachedLogger import CachedLogger
@@ -37,6 +38,12 @@ def set_env(key, value):
 
 def get_env():
     return env_params
+
+def log_exception(ec):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    tb_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    last = len(tb_lines) - 1
+    logger().error(tb_lines[last - 1] + tb_lines[last])
 
 class TestSuite:
     def __init__(self):
@@ -93,7 +100,8 @@ class TestSuite:
                 else:
                     self.teardown_func()
             except Exception as ec:
-                self.logger.error("ABORT: Suite " + desc + " failed with " + str(ec))
+                log_exception(ec)
+                self.logger.error("ABORT: Suite " + desc + " failed")
                 self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), False, datetime.datetime.now().timestamp() - start, [0,0])
                 self._report.finish_results(self.__report_file)
                 sys.exit(1)
@@ -107,7 +115,7 @@ class TestSuite:
             try:
                 tc.execute()
             except Exception as ec:
-                self.logger.error("Testcase execution failed with: " + str(ec))
+                log_exception(ec)
                 tc_failed = True
             duration = datetime.datetime.now().timestamp() - start
 
@@ -126,7 +134,8 @@ class TestSuite:
         try:
             tc.prepare()
         except Exception as ec:
-            self.logger.error("Preparation of testcase failed with: " + str(ec))
+            log_exception(ec)
+            self.logger.error("Preparation of testcase failed.")
             self._report.add_result(tc.get_description(), self.__cached_logger.stop_logging(), False, [0, 0])
             self.__fail()
             return
@@ -141,7 +150,8 @@ class TestSuite:
         try:
             tc.teardown()
         except Exception as ec:
-            self.logger.error("Testcase teardown failed with: " + str(ec))
+            log_exception(ec)
+            self.logger.error("Testcase teardown failed.")
             tc_failed = True
 
         log = self.__cached_logger.stop_logging()

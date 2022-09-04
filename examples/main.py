@@ -41,7 +41,7 @@ def custom_testcase_teardown():
     sst.logger().info("tearing down this case")
 
 @sst.testcase(retry=2, prepare_func=custom_testcase_prepare, teardown_func=custom_testcase_teardown)
-def prepare_case(self):
+def prepare_case():
     raise Exception("retrying")
 
 sst.run_tests()

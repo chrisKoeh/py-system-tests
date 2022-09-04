@@ -23,6 +23,7 @@ class CachedLogger(object):
         self.__log_capture_string = None
     def start_logging(self):
         self.__old_stdout = sys.stdout
+        self.__old_stderr = sys.stderr
         self.__log_capture_string = io.StringIO()
         ch = logging.StreamHandler(self.__log_capture_string)
         ch.setLevel(logging.DEBUG)
@@ -31,6 +32,7 @@ class CachedLogger(object):
 
         self.__logger = logging.getLogger('basic_logger')
         sys.stdout = LoggerWriter(self.__logger.info)
+        sys.stderr = LoggerWriter(self.__logger.error)
         self.__logger .setLevel(logging.DEBUG)
         self.__logger .addHandler(ch)
         return self.__logger
@@ -39,6 +41,7 @@ class CachedLogger(object):
         log_contents = self.__log_capture_string.getvalue()
         self.__log_capture_string.flush()
         sys.stdout = self.__old_stdout
+        sys.stderr = self.__old_stderr
         print(log_contents)
         return log_contents
 
