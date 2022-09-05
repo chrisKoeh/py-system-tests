@@ -37,6 +37,9 @@ def log_exception(ec):
     last = len(tb_lines) - 1
     logger().error(tb_lines[last - 1] + tb_lines[last])
 
+def get_time():
+    return datetime.datetime.now().timestamp()
+
 class TestSuite:
     def __init__(self):
         self._report = ReportHtml()
@@ -81,7 +84,7 @@ class TestSuite:
         print("\n\n----\nPASS\n----\n")
 
     def __suite(self, no_suite_setup, desc):
-        start = datetime.datetime.now().timestamp()
+        start = get_time()
         if not no_suite_setup:
             try:
                 print(get_overline())
@@ -94,41 +97,43 @@ class TestSuite:
             except Exception as ec:
                 log_exception(ec)
                 self.logger.error("ABORT: Suite " + desc + " failed")
-                self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), False, datetime.datetime.now().timestamp() - start, [0,0])
+                self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), False, get_time() - start, [0,0])
                 self._report.finish_results(self.__report_file)
                 sys.exit(1)
 
-            self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), True, datetime.datetime.now().timestamp() - start, [0,0])
+            self._report.add_result("Suite " + desc, self.__cached_logger.stop_logging(), True, get_time() - start, [0,0])
 
     def __run_testcase(self, tc):
-        def __execute():
-            tc_failed = False
-            start = datetime.datetime.now().timestamp()
+        def __perform_task(func, desc):
+            start = get_time()
             try:
-                tc.execute()
+                func()
+                return [True, get_time() - start]
             except Exception as ec:
                 log_exception(ec)
+                self.logger.error(desc + " failed.")
                 tc_failed = True
-            duration = datetime.datetime.now().timestamp() - start
+                return [False, get_time() - start]
 
+        def __execute():
+            [res, duration] = __perform_task(tc.execute, "Testcase")
             if tc.timeout > 0:
                 if tc.timeout < duration:
                     self.logger.error("Testcase execution timeout (" + str(tc.timeout) + " s) exceeded taking " + '{:.5f}'.format(duration) + " s instead.")
-                    tc_failed = True
+                    res = False
 
-            return [tc_failed, duration]
+            return [not res, duration]
 
-        print(get_overline())
-        print("TEST " + tc.get_description() + ":\n\n")
         tc_failed = True
+        tc_desc = tc.get_description()
+        print(get_overline())
+        print("TEST " + tc_desc + ":\n\n")
         self.logger = self.__cached_logger.start_logging()
         tc.logger = self.logger
-        try:
-            tc.prepare()
-        except Exception as ec:
-            log_exception(ec)
-            self.logger.error("Preparation of testcase failed.")
-            self._report.add_result(tc.get_description(), self.__cached_logger.stop_logging(), False, [0, 0])
+
+        [res, duration] = __perform_task(tc.prepare, "Preparation of testcase")
+        if not res:
+            self._report.add_result(tc_desc, self.__cached_logger.stop_logging(), False, duration, [0,0])
             self.__fail()
             return
 
@@ -139,20 +144,15 @@ class TestSuite:
                 self.logger.info(str(retries) + ". Retry of testcase now.")
             tc_failed, duration = __execute()
 
-        try:
-            tc.teardown()
-        except Exception as ec:
-            log_exception(ec)
-            self.logger.error("Testcase teardown failed.")
-            tc_failed = True
+        [teardown_res, _] = __perform_task(tc.teardown, "Testcase teardown")
 
         log = self.__cached_logger.stop_logging()
-        if not tc_failed:
+        if not tc_failed and teardown_res:
             self.__pass()
         else:
             self.__fail()
 
-        self._report.add_result(tc.get_description(), log, not tc_failed, duration, [retries, tc.retry])
+        self._report.add_result(tc_desc, log, not tc_failed, duration, [retries, tc.retry])
 
     def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()

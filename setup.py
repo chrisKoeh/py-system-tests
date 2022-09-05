@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="simple-system-tests",
-    version="0.4.1",
+    version="0.4.2",
     author="Christian Koehler",
     author_email="christian_koehler87@gmx.de",
     packages=["simple_system_tests"],

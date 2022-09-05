@@ -34,14 +34,15 @@ def retry_case():
 def timeout_case():
     time.sleep(1)
 
-def custom_testcase_prepare():
-    sst.logger().info("preparing this case")
+def fail():
+    raise Exception("failed")
 
-def custom_testcase_teardown():
-    sst.logger().info("tearing down this case")
+@sst.testcase(prepare_func=fail)
+def prepare_fail_case():
+    sst.logger().info("This wont be printed")
 
-@sst.testcase(retry=2, prepare_func=custom_testcase_prepare, teardown_func=custom_testcase_teardown)
-def prepare_case():
-    raise Exception("retrying")
+@sst.testcase(teardown_func=fail)
+def teardown_fail_case():
+    sst.logger().info("This will be printed")
 
 sst.run_tests()
