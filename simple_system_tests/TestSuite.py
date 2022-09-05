@@ -10,14 +10,13 @@ from simple_system_tests.ReportHtml import ReportHtml
 from simple_system_tests.CachedLogger import CachedLogger
 from simple_system_tests.TestCase import TestCase
 
-MAX_OVERLINE_COLS=60
-OVERLINE="---------------------------------------------------------------------\n"
+DEFAULT_OVERLINE_COLS=60
 
-global Suite
-global env_params
+global __Suite
+global __env_params
 
 def get_overline():
-    cols = MAX_OVERLINE_COLS
+    cols = DEFAULT_OVERLINE_COLS
     try:
         cols = os.get_terminal_size().columns
     except:
@@ -29,15 +28,8 @@ def get_overline():
     return ol + "\n"
 
 def set_env_params(params):
-    global env_params
-    env_params = params
-
-def set_env(key, value):
-    global env_params
-    env_params[key] = value
-
-def get_env():
-    return env_params
+    global __env_params
+    __env_params = params
 
 def log_exception(ec):
     exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -179,7 +171,6 @@ class TestSuite:
         try:
             params = json.loads(open(params_env).read())
             set_env_params(params)
-            print(env_params)
         except Exception as ec:
             print(str(ec) + ". So no parameters will be passed!")
 
@@ -216,19 +207,27 @@ class TestSuite:
             sys.exit(1)
 
 set_env_params({})
-Suite = TestSuite()
+__Suite = TestSuite()
+
+# public functions except for __add_tc
+def get_env():
+    return __env_params
+
+def set_env(key, value):
+    global __env_params
+    __env_params[key] = value
 
 def prepare_suite(func):
-    Suite.prepare_func = func
+    __Suite.prepare_func = func
 
 def teardown_suite(func):
-    Suite.teardown_func = func
+    __Suite.teardown_func = func
 
 def logger():
-    return Suite.logger
+    return __Suite.logger
 
-def add_tc(func, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
-    global Suite
+def __add_tc(func, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown_func=None):
+    global __Suite
     desc = func.__name__
     desc = desc[0].upper() + desc[1:]
     T=TestCase(desc.replace("_"," "))
@@ -237,17 +236,17 @@ def add_tc(func, sub_params=[], retry=0, timeout=-1, prepare_func=None, teardown
     T.execute_func = func
     T.prepare_func = prepare_func
     T.teardown_func = teardown_func
-    Suite.add_test_case(T, sub_params)
+    __Suite.add_test_case(T, sub_params)
 
 def testcase(retry=0, timeout=-1, prepare_func=None, teardown_func=None):
     def testcase_(func):
-        add_tc(func, [], retry, timeout, prepare_func, teardown_func)
+        __add_tc(func, [], retry, timeout, prepare_func, teardown_func)
     return testcase_
 
 def testcases(sub_params, retry=0, timeout=-1, prepare_func=None, teardown_func=None):
     def testcases_(func):
-        add_tc(func, sub_params, retry, timeout, prepare_func, teardown_func)
+        __add_tc(func, sub_params, retry, timeout, prepare_func, teardown_func)
     return testcases_
 
 def run_tests():
-    Suite.execute_tests()
+    __Suite.execute_tests()
