@@ -147,12 +147,13 @@ class TestSuite:
         [teardown_res, _] = __perform_task(tc.teardown, "Testcase teardown")
 
         log = self.__cached_logger.stop_logging()
-        if not tc_failed and teardown_res:
+        res = not tc_failed and teardown_res
+        if res:
             self.__pass()
         else:
             self.__fail()
 
-        self._report.add_result(tc_desc, log, not tc_failed, duration, [retries, tc.retry])
+        self._report.add_result(tc_desc, log, res, duration, [retries, tc.retry])
 
     def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()
