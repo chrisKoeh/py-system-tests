@@ -88,7 +88,7 @@ class TestSuite:
         if not no_suite_setup:
             try:
                 print(get_overline())
-                print(desc + " of Suite\n")
+                print("Suite " + desc + "\n")
                 self.logger = self.__cached_logger.start_logging()
                 if desc == "Setup":
                     self.prepare_func()
