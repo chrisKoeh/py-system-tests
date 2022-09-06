@@ -57,8 +57,9 @@ Make sure to have varying descriptions for your testcases. Having a look at the 
 `examples/main.py` will give the following output:
 ```
 shell: python3 main.py -h
-usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-s] [-e]
-               [-m] [-j] [-r] [-t] [-pr]
+usage: main.py [-h] [-no] [-p JSON_SYSTEM_PARAMS] [-o REPORT_OUTPUT] [-e] [-s]
+               [-m] [-j] [-r] [-t] [-pr] [-te]
+
 optional arguments:
   -h, --help            show this help message and exit
   -no, --no-suite-setup
@@ -67,15 +68,17 @@ optional arguments:
                         Path to JSON params file.
   -o REPORT_OUTPUT, --report-output REPORT_OUTPUT
                         Path to report html file.
-  -e   --env_case       Test Env case
-  -s,  --simple_print   Test Simple print
-  -m,  --multi_prints   Test Multi prints
-  -j,  --json_multi_prints
+  -e, --env_case        Test Env case
+  -s, --simple_print    Test Simple print
+  -m, --multi_prints    Test Multi prints
+  -j, --json_multi_prints
                         Test Json multi prints
-  -r,  --retries        Test Retry case
-  -t,  --timeouted      Test Timeout case
-  -pr, --prepared_and_torndown
-                        Test prepared and torndown
+  -r, --retry_case      Test Retry case
+  -t, --timeout_case    Test Timeout case
+  -pr, --prepare_fail_case
+                        Test Prepare fail case
+  -te, --teardown_fail_case
+                        Test Teardown fail case
 ```
 Testcases can be called separately without having to execute all testcases in one run.
 It is also possible to pass multiple testcases in one execution. In case the Suite setup and

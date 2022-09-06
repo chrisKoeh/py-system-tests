@@ -1,5 +1,6 @@
 # Execute before: python3 examples/main.py -o index.html > log
 
+import subprocess
 from html.parser import HTMLParser
 
 start_tag = False
@@ -119,3 +120,11 @@ validate("Timeout case", ["ERROR", "Testcase execution timeout"], exp_duration=1
 validate("Prepare fail case", exp_res="FAIL", log_count=2, exp_not="This wont be printed")
 validate("Teardown fail case", ["INFO", "This will be printed"], exp_res="FAIL", log_count=3)
 validate("Suite Teardown", ["INFO", "Tearing down the testSuite"])
+print("Unit test: Check main help in README.md")
+help=subprocess.check_output("python3 examples/main.py -h", shell=True).decode("utf-8")
+readme=open("README.md").read()
+help_readme = readme[readme.find("usage: main.py"):]
+help_readme = help_readme[:help_readme.find("```")]
+if help != help_readme and help != help_readme.replace("optional arguments", "options"):
+    raise Exception("help text wrong")
+print("PASS")
