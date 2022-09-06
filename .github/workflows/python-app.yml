@@ -31,5 +31,5 @@ jobs:
         python setup.py install
     - name: Test
       run: |
-        python examples/main.py -o index.html > log || true
-        python pseudo_unit_tests.py
+        python examples/main.py > log || true
+        python tests/pseudo_unit_tests.py

@@ -4,16 +4,16 @@ import sys
 
 class LoggerWriter:
     def __init__(self, logfct):
-        self.logfct = logfct
-        self.buf = []
+        self.__logfct = logfct
+        self.__buf = []
 
     def write(self, msg):
         if msg.endswith('\n'):
-            self.buf.append(msg.strip('\n'))
-            self.logfct(''.join(self.buf))
-            self.buf = []
+            self.__buf.append(msg.strip('\n'))
+            self.__logfct(''.join(self.__buf))
+            self.__buf = []
         else:
-            self.buf.append(msg)
+            self.__buf.append(msg)
 
     def flush(self):
         pass

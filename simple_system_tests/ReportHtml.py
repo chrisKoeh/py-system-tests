@@ -50,7 +50,7 @@ function show_log(c) {
 
 def dropdown_link(log):
     global DROPDOWN_COUNTER
-    LOG_OUTS = ["INFO", "WARNING", "ERROR"]
+    LOG_OUTS = ["DEBUG", "CRITICAL", "INFO", "WARNING", "ERROR"]
     DROPDOWN_COUNTER = DROPDOWN_COUNTER + 1
     log_lines = log.split("</br>")
 
@@ -80,30 +80,30 @@ def dropdown_link(log):
 
 class ReportHtml(object):
     def __init__(self):
-        self.html = '<!doctype html><html><head><title>System Test Results</title>' + style_css_and_js() + '</head><body><table>'
-        self.html = self.html + "<tr><td><b>Testcase</b></td><td><b>Log</b></td><td><b>Duration (s)</b></td>"
-        self.html = self.html + "<td><b>Retries(allowed)</b></td><td><b>Result</b></td></tr>"
+        self.__html = '<!doctype html><html><head><title>System Test Results</title>' + style_css_and_js() + '</head><body><table>'
+        self.__html = self.__html + "<tr><td><b>Testcase</b></td><td><b>Log</b></td><td><b>Duration (s)</b></td>"
+        self.__html = self.__html + "<td><b>Retries(allowed)</b></td><td><b>Result</b></td></tr>"
 
-    def add_result(self, description, log, result, duration, retries):
-        duration = '{:.5f}'.format(duration)
+    def add_result(self, res):
+        duration = '{:.5f}'.format(res.duration)
         color = "red"
         txt = "FAIL"
-        if result:
+        if res.result:
             color = "green"
             txt = "PASS"
 
         log_html = ""
-        if log.strip() != "":
-            log_html = dropdown_link(log.replace("\n", "</br>"))
-        self.html = self.html + '<tr>'
-        self.html = self.html + '<td>' + description + '</td>'
-        self.html = self.html + '<td style="min-width:600px">' + log_html + '</td>'
-        self.html = self.html + '<td style="text-align:center">' + str(duration) + '</td>'
-        self.html = self.html + '<td style="text-align:center">' + str(retries[0]) + '(' + str(retries[1]) + ')</td>'
-        self.html = self.html + '<td style="text-align:center;color:white;background-color:'
-        self.html = self.html + color + '">' + txt + '</td>'
-        self.html = self.html + "</tr>"
+        if res.log.strip() != "":
+            log_html = dropdown_link(res.log.replace("\n", "</br>"))
+        self.__html = self.__html + '<tr>'
+        self.__html = self.__html + '<td>' + res.description + '</td>'
+        self.__html = self.__html + '<td style="min-width:600px">' + log_html + '</td>'
+        self.__html = self.__html + '<td style="text-align:center">' + str(duration) + '</td>'
+        self.__html = self.__html + '<td style="text-align:center">' + str(res.retry) + '(' + str(res.retry_allowed) + ')</td>'
+        self.__html = self.__html + '<td style="text-align:center;color:white;background-color:'
+        self.__html = self.__html + color + '">' + txt + '</td>'
+        self.__html = self.__html + "</tr>"
 
     def finish_results(self, output_file):
-        self.html = self.html + "</table></body></html>"
-        open(output_file, "w").write(self.html)
+        self.__html = self.__html + "</table></body></html>"
+        open(output_file, "w").write(self.__html)
