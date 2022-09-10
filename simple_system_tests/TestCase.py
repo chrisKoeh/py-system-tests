@@ -13,9 +13,11 @@ class TestCase(object):
         self.prepare_func = None
         self.teardown_func = None
         self.__logger = None
+
     def __prepare(self):
         if self.prepare_func:
             self.prepare_func()
+
     def __execute(self):
         if not self.execute_func:
             raise Exception("Not implemented.")
@@ -23,19 +25,24 @@ class TestCase(object):
             self.execute_func()
         else:
             self.execute_func(self.__current_sub)
+
     def __teardown(self):
         if self.teardown_func:
             self.teardown_func()
+
     def set_sub_params(self, params):
         if not isinstance(params, list):
             raise Exception("Subtest parameters needs to be of type list.")
         self.__sub_params = params
+
     def get_sub_params(self):
         return self.__sub_params
+
     def get_description(self):
         if self.__sub_desc != "":
             return self.__sub_desc
         return self.__desc
+
     def set_sub(self, i):
         p = self.__sub_params[i]
         suffix = ""
@@ -49,6 +56,7 @@ class TestCase(object):
             suffix = str(p)
         self.__sub_desc = self.__desc + " - " + suffix
         self.__current_sub = p
+
     def __perform_task(self, func, task_desc):
         try:
             func()
@@ -57,6 +65,7 @@ class TestCase(object):
             self.__logger.error(get_exception(ec))
             self.__logger.error(task_desc + " failed.")
             return False
+
     def run_testcase(self, logger):
         self.__logger = logger
         test_result = TestResult(self.get_description())
@@ -84,8 +93,5 @@ class TestCase(object):
         test_result.result = res and test_result.result
         return test_result
 
-    def is_active(self, args):
-       active = vars(args)[self.__desc.replace("-","_").replace(" ", "_").lower()]
-       return active
     def __del__(self):
        pass

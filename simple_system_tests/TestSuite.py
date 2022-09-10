@@ -1,11 +1,11 @@
 import sys
-import argparse
 import json
 
 from simple_system_tests.ReportHtml import ReportHtml
 from simple_system_tests.CachedLogger import CachedLogger
 from simple_system_tests.TestCase import TestCase
 from simple_system_tests.TestResult import TestResult
+from simple_system_tests.CommandLineParser import CommandLineParser
 from simple_system_tests.helper import *
 
 global __Suite
@@ -21,34 +21,9 @@ class TestSuite:
         self.__testcases = []
         self.__pass_counter = 0
         self.__fail_counter = 0
-        self.__cmd_options = ["no", "h", "p", "o"]
-        self.__parser = argparse.ArgumentParser()
-        self.__parser.add_argument('-no','--no-suite-setup', help='No Suite Prepare and Teardown', action="store_true")
-        self.__parser.add_argument('-p','--json-system-params', help='Path to JSON params file.', default="system_params.json")
-        self.__parser.add_argument('-o','--report-output', help='Path to report html file.', default="index.html")
-        self.__old_stdout = None
-        self.__stdout = None
+        self.__cmd_parser = CommandLineParser()
         self.prepare_func = None
         self.teardown_func = None
-
-    def __add_cmd_option(self, desc):
-        for cmd_len in range(len(desc)):
-            if self.__cmd_options == []:
-                cmd_opt = desc[0:1].lower()
-                self.__cmd_options.append(cmd_opt)
-                return cmd_opt
-
-            duplicate=False
-            cmd_opt = desc[0:cmd_len + 1].lower()
-            for c in self.__cmd_options:
-                if cmd_opt == c:
-                    duplicate = True
-                    break
-            if not duplicate:
-                self.__cmd_options.append(cmd_opt)
-                return cmd_opt
-
-        raise Exception(desc + " has duplicate description")
 
     def __fail(self):
         self.__fail_counter = self.__fail_counter + 1
@@ -102,20 +77,19 @@ class TestSuite:
     def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()
         test_case.set_sub_params(sub_params)
-        desc_cmd = desc.replace(" ", "_").replace("-","_").lower()
-        self.__parser.add_argument('-' + self.__add_cmd_option(desc),'--' + desc_cmd, help='Test ' + desc, action="store_true")
+        self.__cmd_parser.add_testcase_as_cmd_option(desc)
         self.__testcases.append(test_case)
 
     def execute_tests(self):
         def specific_tests_chosen():
             for tc in self.__testcases:
-                if tc.is_active(args):
+                if self.__cmd_parser.cmd_arg_was_set(tc.get_description()):
                     return True
             return False
 
-        def read_json_env():
+        def read_json_env(env_file):
             try:
-                params = json.loads(open(params.env).read())
+                params = json.loads(open(env_file).read())
                 set_env_params(params)
             except Exception as ec:
                 print(str(ec) + ". So no parameters will be passed!")
@@ -130,19 +104,16 @@ class TestSuite:
                 self.__run_testcase(tc)
 
         self.__cached_logger = CachedLogger()
-        args = self.__parser.parse_args()
-        no_suite_setup = vars(args)["no_suite_setup"]
-        params_env = vars(args)["json_system_params"]
-        self.__report_file = vars(args)["report_output"]
+        [no_suite_setup, env_file, self.__report_file] = self.__cmd_parser.parse_args()
 
-        read_json_env()
+        read_json_env(env_file)
 
         if self.prepare_func:
             self.__suite(no_suite_setup, "Setup")
 
         specific_tests_set = specific_tests_chosen()
         for tc in self.__testcases:
-            if specific_tests_set and not tc.is_active(args):
+            if specific_tests_set and not self.__cmd_parser.cmd_arg_was_set(tc.get_description()):
                 continue
 
             run_testcase_s(tc)

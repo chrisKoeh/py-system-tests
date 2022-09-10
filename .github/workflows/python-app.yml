@@ -26,10 +26,23 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install wheel setuptools
+        pip install wheel setuptools requests
         python setup.py bdist_wheel sdist
         python setup.py install
     - name: Test
       run: |
+        echo '{"env0": "str"}' > system_params.json
         python examples/main.py > log || true
         python tests/pseudo_unit_tests.py
+
+        # test -no option
+        python examples/main.py -no > log || true
+        python tests/pseudo_unit_tests.py -no
+
+        # test -p option
+        rm system_params.json
+        echo '{"env0": "str"}' > sys.json
+        python examples/main.py -p sys.json > log || true
+        python tests/pseudo_unit_tests.py
+
+        python3 examples/main_http.py

@@ -1,7 +1,9 @@
-# Execute before: python3 examples/main.py > log
+# Execute before: echo '{"env0":"str"}' > system_params.json; python3 examples/main.py > log
 # Preferred way to call: python3 tests/pseudo_unit_tests.py
 
 import subprocess
+import sys
+
 from HtmlParser import HtmlParser
 from LogParser import LogParser
 
@@ -26,8 +28,16 @@ def validate_readme():
         raise Exception("Help in README.md differs")
     print("PASS")
 
-validate_testcase("Suite Setup", ["INFO", "Preparing the testSuite"])
-validate_testcase("Env case", ["WARNING", "{'env1': 5}"])
+json_env = "{'env0': 'str', 'env1': 5}"
+suite_setup = True
+if len(sys.argv) > 1:
+    if sys.argv[1] == "-no":
+        suite_setup = False
+        json_env = "{'env0': 'str'}"
+
+if suite_setup:
+    validate_testcase("Suite Setup", ["INFO", "Preparing the testSuite"])
+validate_testcase("Env case", ["WARNING", json_env])
 validate_testcase("Simple print", ["INFO", "simple"])
 for i in range(3):
     validate_testcase("Multi prints - " + str(i+1), ["INFO", str(i+1)])
@@ -39,5 +49,6 @@ validate_testcase("Retry case", exp_retries="2(2)", exp_res="FAIL", log_count=8)
 validate_testcase("Timeout case", ["ERROR", "Testcase execution timeout"], exp_duration=1.0, exp_res="FAIL")
 validate_testcase("Prepare fail case", exp_res="FAIL", log_count=2, exp_not="This wont be printed")
 validate_testcase("Teardown fail case", ["INFO", "This will be printed"], exp_res="FAIL", log_count=3)
-validate_testcase("Suite Teardown", ["INFO", "Tearing down the testSuite"])
+if suite_setup:
+    validate_testcase("Suite Teardown", ["INFO", "Tearing down the testSuite"])
 validate_readme()
