@@ -1,5 +1,11 @@
+import datetime
+
 OVERLINE="_______\n\n"
 PASS_LINE="----\n"
+
+def get_current_year():
+    d = datetime.datetime.now()
+    return d.strftime("%Y")
 
 class LogParser(object):
     def __init__(self, file_name):
@@ -31,7 +37,7 @@ class LogParser(object):
         entry_content = entry_content[find_desc_end + len("\n\n"):]
 
         # find first_log
-        log_raw = entry_content[entry_content.find("2022"):].split("\n")[0].split(" - ")
+        log_raw = entry_content[entry_content.find(get_current_year()):].split("\n")[0].split(" - ")
         if len(log_raw) > 2:
             entry["first_log"] = [log_raw[1], log_raw[2]]
 

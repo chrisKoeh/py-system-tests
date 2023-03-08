@@ -9,7 +9,7 @@ from LogParser import LogParser
 
 log_parser = LogParser("log")
 html_parser = HtmlParser()
-html_parser.feed(open("index.html").read())
+html_parser.feed(open("index.html").read().replace("<pre>", "").replace("</pre>", ""))
 
 def validate_testcase(exp_desc, exp_log=[], exp_duration=0.0,
                           exp_retries="0(0)", exp_res="PASS", log_count=1, exp_not=""):

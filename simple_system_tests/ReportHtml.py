@@ -1,3 +1,5 @@
+from html import escape
+
 global DROPDOWN_COUNTER
 DROPDOWN_COUNTER=0
 
@@ -52,7 +54,7 @@ def dropdown_link(log):
     global DROPDOWN_COUNTER
     LOG_OUTS = ["DEBUG", "CRITICAL", "INFO", "WARNING", "ERROR"]
     DROPDOWN_COUNTER = DROPDOWN_COUNTER + 1
-    log_lines = log.split("</br>")
+    log_lines = log.split("\n")
 
     log_content = ""
     for l in log_lines:
@@ -66,12 +68,12 @@ def dropdown_link(log):
 
             log_content = log_content + "<tr><td><b>" + log_entries[0] + " " + log_entries[1] + "</b></td>"
             log_content = log_content + "<td><b>" + log_entries[3] + "</b></td>"
-            log_content = log_content + "<td>" + " ".join(log_entries[5:])
+            log_content = log_content + "<td><pre>" + " ".join(log_entries[5:])
         else:
-            log_content = log_content + "</br>" + " ".join(log_entries)
+            log_content = log_content + "\n" + " ".join(log_entries)
 
     if log_content != "" and not log_content.endswith("</tr>"):
-        log_content = log_content + "</td></tr>"
+        log_content = log_content + "</pre></td></tr>"
 
     return '''<div class="dropdown">
   <button onclick="show_log(''' + str(DROPDOWN_COUNTER) + ''')" class="dropbtn">Log Content</button>
@@ -94,7 +96,8 @@ class ReportHtml(object):
 
         log_html = ""
         if res.log.strip() != "":
-            log_html = dropdown_link(res.log.replace("\n", "</br>"))
+            res.log = escape(res.log)
+            log_html = dropdown_link(res.log)
         self.__html = self.__html + '<tr>'
         self.__html = self.__html + '<td>' + res.description + '</td>'
         self.__html = self.__html + '<td style="min-width:600px">' + log_html + '</td>'
