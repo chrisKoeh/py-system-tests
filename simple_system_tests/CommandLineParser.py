@@ -7,6 +7,7 @@ class CommandLineParser:
         self.__parser.add_argument('-no','--no-suite-setup', help='No Suite Prepare and Teardown', action="store_true")
         self.__parser.add_argument('-p','--json-system-params', help='Path to JSON params file.', default="system_params.json")
         self.__parser.add_argument('-o','--report-output', help='Path to report html file.', default="index.html")
+        self.__custom_cmds = []
 
     def __cmd_opt_duplicates(self, cmd_opt):
         for c in self.__cmd_options:
@@ -36,7 +37,19 @@ class CommandLineParser:
         no_suite_setup = vars(self.__args)["no_suite_setup"]
         params_env = vars(self.__args)["json_system_params"]
         report_file = vars(self.__args)["report_output"]
-        return [no_suite_setup, params_env, report_file]
+        custom_env ={}
+        for k in self.__custom_cmds:
+            custom_env[k] = vars(self.__args)[k]
+        return [no_suite_setup, params_env, report_file, custom_env]
 
     def cmd_arg_was_set(self, desc):
         return vars(self.__args)[CommandLineParser.desc_to_cmd(desc)]
+
+    def add_custom_cmd_option(self, attr, desc, default=None):
+        cmd = CommandLineParser.desc_to_cmd(attr)
+
+        if default == None:
+            self.__parser.add_argument('-' + self.__add_cmd_option(cmd), '--' + cmd, help=desc, required=True)
+        else:
+            self.__parser.add_argument('-' + self.__add_cmd_option(cmd), '--' + cmd, help=desc, default=default, required=True)
+        self.__custom_cmds.append(cmd)

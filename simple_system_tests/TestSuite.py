@@ -74,6 +74,9 @@ class TestSuite:
             self.__fail()
         self._report.add_result(test_result)
 
+    def add_cmd_option(self, attr, desc, default=None):
+        self.__cmd_parser.add_custom_cmd_option(attr, desc, default)
+
     def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()
         test_case.set_sub_params(sub_params)
@@ -104,9 +107,15 @@ class TestSuite:
                 self.__run_testcase(tc)
 
         self.__cached_logger = CachedLogger()
-        [no_suite_setup, env_file, self.__report_file] = self.__cmd_parser.parse_args()
+        [no_suite_setup, env_file, self.__report_file, cmd_env] = self.__cmd_parser.parse_args()
 
         read_json_env(env_file)
+
+        env_params = get_env()
+        for k in cmd_env:
+            env_params[k] = cmd_env[k]
+
+        set_env_params(env_params)
 
         if self.prepare_func:
             self.__suite(no_suite_setup, "Setup")
@@ -145,6 +154,9 @@ set_env_params({})
 __Suite = TestSuite()
 
 # public functions
+def add_cmd_option(attr, desc, default=None):
+    __Suite.add_cmd_option(attr, desc, default)
+
 def get_env():
     return __env_params
 

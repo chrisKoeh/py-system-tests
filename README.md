@@ -50,6 +50,7 @@ def s_teardown():
 separately
 
 ## Command line options
+### Auto created
 When using a Testsuite command line options for all testcases added to the suite will be
 automatically created. Command line option shortcut will be
 derived from the beginning characters of the decorated function name.
@@ -83,6 +84,14 @@ optional arguments:
 Testcases can be called separately without having to execute all testcases in one run.
 It is also possible to pass multiple testcases in one execution. In case the Suite setup and
 teardown is not wanted this can be achieved by putting the `-no, --no-suite-setup` option.
+### Adding custom command line options
+System parameters can be also defined and passed via cmd line option. Just create the according
+cmd option like, within your main script on the top at best:
+```
+sst.add_cmd_option('my_opt', 'A custom option that needs to be passed')
+```
+With that the option will be added to the command line parser. The value passed via command line
+can then be used within the main script using `sst.get_env()["my_opt"]`.
 ## Testcases
 ### Create new testcases
 
