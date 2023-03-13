@@ -47,9 +47,5 @@ class CommandLineParser:
 
     def add_custom_cmd_option(self, attr, desc, default=None, required=False):
         cmd = CommandLineParser.desc_to_cmd(attr)
-
-        if default == None and not required:
-            print("WARNING: " + attr + " command option has no default value, and set as optional.")
         self.__parser.add_argument('-' + self.__add_cmd_option(cmd), '--' + cmd, help=desc, default=default, required=required)
-
         self.__custom_cmds.append(cmd)
