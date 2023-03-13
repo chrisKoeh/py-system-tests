@@ -91,7 +91,9 @@ cmd option like, within your main script on the top at best:
 sst.add_cmd_option('my_opt', 'A custom option that needs to be passed')
 ```
 With that the option will be added to the command line parser. The value passed via command line
-can then be used within the main script using `sst.get_env()["my_opt"]`.
+can then be used within the main script using `sst.get_env()["my_opt"]`. If the key is also red
+from system_params.json the command line option will override, as long as provided by the user
+or if a default value was given.
 ## Testcases
 ### Create new testcases
 

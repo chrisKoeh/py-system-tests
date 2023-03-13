@@ -74,8 +74,8 @@ class TestSuite:
             self.__fail()
         self._report.add_result(test_result)
 
-    def add_cmd_option(self, attr, desc, default=None):
-        self.__cmd_parser.add_custom_cmd_option(attr, desc, default)
+    def add_cmd_option(self, attr, desc, default=None, required=False):
+        self.__cmd_parser.add_custom_cmd_option(attr, desc, default, required)
 
     def add_test_case(self, test_case, sub_params=[]):
         desc = test_case.get_description()
@@ -113,7 +113,8 @@ class TestSuite:
 
         env_params = get_env()
         for k in cmd_env:
-            env_params[k] = cmd_env[k]
+            if cmd_env[k] != None:
+                env_params[k] = cmd_env[k]
 
         set_env_params(env_params)
 
@@ -154,8 +155,8 @@ set_env_params({})
 __Suite = TestSuite()
 
 # public functions
-def add_cmd_option(attr, desc, default=None):
-    __Suite.add_cmd_option(attr, desc, default)
+def add_cmd_option(attr, desc, default=None, required=False):
+    __Suite.add_cmd_option(attr, desc, default, required)
 
 def get_env():
     return __env_params
